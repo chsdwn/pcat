@@ -1,6 +1,7 @@
 const express = require('express')
 const fileupload = require('express-fileupload')
 const fs = require('fs')
+const methodOverride = require('method-override')
 const mongoose = require('mongoose')
 const path = require('path')
 const Photo = require('./models/photo')
@@ -20,6 +21,7 @@ app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileupload())
+app.use(methodOverride('_method'))
 app.use(pathNameLogger)
 
 app.get('/', async (req, res) => {
@@ -47,6 +49,19 @@ app.post('/photos', (req, res) => {
 app.get('/photos/:id', async (req, res) => {
   const photo = await Photo.findById(req.params.id)
   res.render('photo', { photo })
+})
+app.put('/photos/:id', async (req, res) => {
+  const id = req.params.id
+  const photo = await Photo.findById(id)
+  photo.title = req.body.title
+  photo.description = req.body.description
+  await photo.save()
+
+  res.redirect(`/photos/${id}`)
+})
+app.get('/photos/edit/:id', async (req, res) => {
+  const photo = await Photo.findById(req.params.id)
+  res.render('edit', { photo })
 })
 
 const port = 3000
