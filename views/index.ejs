@@ -18,7 +18,7 @@
             <div id="tm-video-container">
                 <video autoplay muted loop id="tm-video">
                     <!-- <source src="video/sunset-timelapse-video.mp4" type="video/mp4"> -->
-                        <source src="video/wheat-field.mp4" type="video/mp4">
+                    <source src="video/wheat-field.mp4" type="video/mp4">
                 </video>    
             </div>
             
@@ -29,7 +29,6 @@
             <div id="content" class="mx-auto tm-content-container">
                 <main>
                     <div class="row tm-catalog-item-list">
-
                         <% photos.map((photo) => { %>
                             <div class="col-lg-4 col-md-6 col-sm-12 tm-catalog-item">
                                 <div class="position-relative tm-thumbnail-container">
@@ -53,11 +52,22 @@
                     <!-- Catalog Paging Buttons -->
                     <div>
                         <ul class="nav tm-paging-links">
-                            <li class="nav-item active"><a href="#" class="nav-link tm-paging-link">1</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">2</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">3</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">4</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">></a></li>
+                            <% for (let i = 0; i < pageCount; i++) { %>
+                                <% if (i + 1 === currentPageNumber) { %>
+                                    <li class="nav-item active">
+                                        <a href="/?page=<%= i + 1 %>" class="nav-link tm-paging-link"><%= i + 1 %></a>
+                                    </li>
+                                <% } else { %>
+                                    <li class="nav-item">
+                                        <a href="/?page=<%= i + 1 %>" class="nav-link tm-paging-link"><%= i + 1 %></a>
+                                    </li>
+                                <% } %>
+                            <% } %>
+                            <% if (pageCount > 1 && currentPageNumber !== pageCount) { %>
+                                <li class="nav-item">
+                                    <a href="/?page=<%= currentPageNumber + 1 %>" class="nav-link tm-paging-link">></a>
+                                </li>
+                            <% } %>
                         </ul>
                     </div>
                 </main>

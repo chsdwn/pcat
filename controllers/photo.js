@@ -3,8 +3,16 @@ const path = require('path')
 const Photo = require('../models/photo')
 
 exports.getAll = async (req, res) => {
-  const photos = await Photo.find({}).sort('-dateCreated')
-  res.render('index', { photos })
+  const currentPageNumber = Number(req.query.page) || 1
+  const limit = 2
+
+  const total = await Photo.find().countDocuments()
+
+  const photos = await Photo.find({})
+    .sort('-dateCreated')
+    .skip((currentPageNumber - 1) * limit)
+    .limit(limit)
+  res.render('index', { photos, currentPageNumber, pageCount: Math.ceil(total / limit) })
 }
 
 exports.get = async (req, res) => {
