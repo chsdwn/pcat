@@ -21,7 +21,7 @@ app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileupload())
-app.use(methodOverride('_method'))
+app.use(methodOverride('_method', { methods: ['POST', 'GET'] }))
 app.use(pathNameLogger)
 
 app.get('/', async (req, res) => {
@@ -58,6 +58,15 @@ app.put('/photos/:id', async (req, res) => {
   await photo.save()
 
   res.redirect(`/photos/${id}`)
+})
+app.delete('/photos/:id', async (req, res) => {
+  const photo = await Photo.findById(req.params.id)
+  const [, folder, file] = photo.image.split('/')
+  const deletedImage = path.join(__dirname, 'public', folder, file)
+  fs.unlinkSync(deletedImage)
+  await photo.remove()
+
+  res.redirect('/')
 })
 app.get('/photos/edit/:id', async (req, res) => {
   const photo = await Photo.findById(req.params.id)
