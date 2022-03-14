@@ -3,7 +3,8 @@ const mongoose = require('mongoose')
 const PhotoSchema = new mongoose.Schema({
   title: String,
   description: String,
-  image: String,
+  image: Buffer,
+  mimetype: String,
   dateCreated: {
     type: Date,
     default: Date.now

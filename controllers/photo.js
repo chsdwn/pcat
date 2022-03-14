@@ -1,6 +1,5 @@
-const fs = require('fs')
-const path = require('path')
 const Photo = require('../models/photo')
+const { convertImageBufferToBase64 } = require('../utils')
 
 exports.getAll = async (req, res) => {
   const currentPageNumber = Number(req.query.page) || 1
@@ -12,25 +11,21 @@ exports.getAll = async (req, res) => {
     .sort('-dateCreated')
     .skip((currentPageNumber - 1) * limit)
     .limit(limit)
+  photos.map((photo) => (photo.image = convertImageBufferToBase64(photo.image, photo.mimetype)))
+
   res.render('index', { photos, currentPageNumber, pageCount: Math.ceil(total / limit) })
 }
 
 exports.get = async (req, res) => {
   const photo = await Photo.findById(req.params.id)
+  photo.image = convertImageBufferToBase64(photo.image, photo.mimetype)
   res.render('photo', { photo })
 }
 
-exports.create = (req, res) => {
-  const uploadDir = path.join('public', 'uploads')
-  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
-
-  const uploadedImage = req.files.image
-  const uploadPath = path.join(__dirname, '..', 'public', 'uploads', uploadedImage.name)
-
-  uploadedImage.mv(uploadPath, async () => {
-    await Photo.create({ ...req.body, image: '/uploads/' + uploadedImage.name })
-    res.redirect('/')
-  })
+exports.create = async (req, res) => {
+  const { data: image, mimetype } = req.files.image
+  await Photo.create({ ...req.body, image, mimetype })
+  res.redirect('/')
 }
 
 exports.update = async (req, res) => {
@@ -45,9 +40,6 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   const photo = await Photo.findById(req.params.id)
-  const [, folder, file] = photo.image.split('/')
-  const deletedImage = path.join(__dirname, '..', 'public', folder, file)
-  fs.unlinkSync(deletedImage)
   await photo.remove()
 
   res.redirect('/')

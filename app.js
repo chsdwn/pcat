@@ -6,16 +6,6 @@ const mongoose = require('mongoose')
 const pageController = require('./controllers/page')
 const photoController = require('./controllers/photo')
 
-mongoose
-  .connect(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.6a4vv.mongodb.net/pcat-db?retryWrites=true&w=majority`)
-  .then(() => console.log('Connected to the MongoDB'))
-  .catch((err) => console.error(err.message))
-
-const pathNameLogger = (req, res, next) => {
-  console.log('[pathName]:', req.url)
-  next()
-}
-
 const app = express()
 
 app.set('view engine', 'ejs')
@@ -25,7 +15,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(fileupload())
 app.use(methodOverride('_method', { methods: ['POST', 'GET'] }))
-app.use(pathNameLogger)
 
 app.get('/', photoController.getAll)
 app.post('/photos', photoController.create)
@@ -37,5 +26,21 @@ app.get('/about', pageController.getAboutPage)
 app.get('/add', pageController.getAddPage)
 app.get('/photos/edit/:id', pageController.getEditPage)
 
+const connectionString = [
+  `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}`,
+  '@cluster0.6a4vv.mongodb.net/pcat-db?retryWrites=true&w=majority'
+].join('')
+const connectToMongoDB = () => mongoose.connect(connectionString)
+
 const port = process.env.PORT || 3000
-app.listen(port, () => console.log(`Listening on port ${port}`))
+const start = async () => {
+  try {
+    await connectToMongoDB()
+    console.log('Connected to the MongoDB')
+
+    app.listen(port, () => console.log(`Listening on port ${port}`))
+  } catch (err) {
+    console.error(err.message)
+  }
+}
+start()
